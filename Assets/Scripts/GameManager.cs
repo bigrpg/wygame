@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour {
 	public float m_support = 0; 	//追随者数量
 	public float m_death = 0;		//死亡人数
 
-	public int m_putdown = 0;	//政府镇压力度[0--100]
+	public float m_putdown = 0;	//政府镇压力度[0--100]
 
 	public Transform[] m_baopos;
 	//fx
@@ -75,7 +75,7 @@ public class GameManager : MonoBehaviour {
 		SetSecret(100);
 		SetSupport(0);
 		SetDeath(0);
-		SetPutDown(20);
+		SetPutDown(0);
 
 		SetTips("");
 		m_xiulian_gui.Show(false);
@@ -133,45 +133,57 @@ public class GameManager : MonoBehaviour {
 
 		m_totaltime += Time.deltaTime;
 		//调整其他数值
-		if(m_totaltime>1)
+		if(m_totaltime>3)
 		{
-			m_secret = m_secret - (0.2f * Time.deltaTime);
+			m_secret = m_secret - 5;
 			SetSecret(m_secret);
+
+			m_putdown = m_putdown + 5;
+			SetPutDown(m_putdown);
+
+			m_totaltime = 0;
+
+			m_support += (Random.value * 100);
+			m_death += (Random.value * 10);
+
+			SetSupport(m_support);
+			SetDeath(m_death);
 		}
+
 	}
 
-	void SetMoney(float m) {
+	public void SetMoney(float m) {
 		m_money = m;
-		m_moneyLabel.text = "金钱:" + ((int)m_money).ToString();
+		m_moneyLabel.text = "金钱:" + ((int)(m_money)).ToString();
 	}
 
-	void SetPower(float p) {
+	public void SetPower(float p) {
 		m_power = p;
 		m_powerLabel.text = "斗争力:" + ((int)m_power).ToString();
 
 	}
 
-	void SetSecret(float s) {
+	public void SetSecret(float s) {
 		m_secret = s;
 		m_secretLabel.text = "隐蔽度:" + ((int)m_secret).ToString();
 	}
 
-	void SetSupport(float s) {
+	public void SetSupport(float s) {
 		m_support = s;
 		m_supportLabel.text = "追随者:" + ((int)m_support).ToString();
 	}
 
-	void SetDeath(float s) {
+	public void SetDeath(float s) {
 		m_death = s;
 		m_deathLabel.text = "伤亡:" + ((int)m_death).ToString();
 	}
 
-	void SetPutDown(int p) {
+	public void SetPutDown(float p) {
 		m_putdown = p;
 		m_putdown_progress_tex.pixelInset=new Rect(0,-16,128*m_putdown/100,16);
 	}
 
-	void SetTips(string  s) {
+	public void SetTips(string  s) {
 		m_tipsLabel.text = s;
 		if( s.CompareTo("") == 0)
 		{
