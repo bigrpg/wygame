@@ -21,6 +21,9 @@ public class Soldiers : MonoBehaviour {
 
 	protected void UpdateMove()
 	{
+		if(GameManager.Instance.m_pause)
+			return;
+
 		m_life -= Time.deltaTime;
 		if(m_life<0)
 			Destroy(this.gameObject);

@@ -17,6 +17,9 @@ public class SoldierSpawn : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		if(GameManager.Instance.m_pause)
+			return;
+
 		m_time -= Time.deltaTime;
 		if(m_time < 0)
 		{
