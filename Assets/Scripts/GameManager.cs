@@ -23,12 +23,16 @@ public class GameManager : MonoBehaviour {
 	protected float m_totaltime = 0;
 	public bool  m_pause = false;
 
+	protected int m_failed = 0;
+
 	//tips
 	protected string[] m_msg = {
 		"你们的反抗活动被发现了，努力提高你们的<color=red>隐蔽度</color>\n" +
 		"可以降低政府的镇压能力",
+
 		"你们的反抗活动在局部取得胜利了，恭喜你们。\n" +
 		"你们获得了资金支持\n" +
+		"消耗金钱来提升活动能力和隐蔽度将有助你更快获胜\n" +
 		"<color=green>注:资金可以用于升级活动能力和隐蔽度</color>"
 	
 	
@@ -73,7 +77,7 @@ public class GameManager : MonoBehaviour {
 		SetMoney(10000);
 		SetPower(1);
 		SetSecret(100);
-		SetSupport(0);
+		SetSupport(1000);
 		SetDeath(0);
 		SetPutDown(0);
 
@@ -124,32 +128,60 @@ public class GameManager : MonoBehaviour {
 			m_baotime -= Time.deltaTime;
 			if(m_baotime < 0)
 			{
+				int index = m_baopos.Length;
+				index = Random.Range(0,index);
+				if(index >= m_baopos.Length)
+					index = 0;
 				m_baotime = Random.value * 5 + m_minbaogap_time;
-				Instantiate(m_explosionFX,m_baopos[0].position,Quaternion.identity);
+				Instantiate(m_explosionFX,m_baopos[index].position,Quaternion.identity);
 				m_delayShowTips = 1;
 				SetMoney(m_money + 100.0f);//增加100钱
 			}
 		}
 
 		m_totaltime += Time.deltaTime;
-		//调整其他数值
-		if(m_totaltime>3)
+
+
+		if(m_totaltime>3)  //调整其他数值
 		{
 			m_secret = m_secret - 5;
+			if(m_secret <0)
+				m_secret = 0;
 			SetSecret(m_secret);
 
-			m_putdown = m_putdown + 5;
+			m_putdown = m_putdown + 4;
+			if(m_putdown >100)
+			{
+				m_putdown = 100;
+			}
 			SetPutDown(m_putdown);
 
 			m_totaltime = 0;
 
-			m_support += (Random.value * 100);
-			m_death += (Random.value * 10);
+			m_support += (Random.value*0.5f) * m_support;
+			m_death += (Random.value*0.5f * m_death)+5;
 
 			SetSupport(m_support);
 			SetDeath(m_death);
+
 		}
 
+		if(m_putdown ==100)
+		{
+			m_pause = true;
+			m_failed = 1;
+			m_delayShowTips = 0;
+			SetTips("");
+			m_xiulian_gui.Show(false);
+		}
+		else if(m_support >= 10000000)
+		{
+			m_pause = true;
+			m_failed = 2;
+			m_delayShowTips = 0;
+			SetTips("");
+			m_xiulian_gui.Show(false);
+		}
 	}
 
 	public void SetMoney(float m) {
@@ -180,7 +212,7 @@ public class GameManager : MonoBehaviour {
 
 	public void SetPutDown(float p) {
 		m_putdown = p;
-		m_putdown_progress_tex.pixelInset=new Rect(0,-16,128*m_putdown/100,16);
+		m_putdown_progress_tex.pixelInset=new Rect(0,-16,256*m_putdown/100,16);
 	}
 
 	public void SetTips(string  s) {
@@ -195,5 +227,27 @@ public class GameManager : MonoBehaviour {
 			m_tipsLabel.enabled = true;
 			m_tipsBg_tex.enabled = true;
 		}
+	}
+	 
+	void OnGUI()
+	{
+		if(m_failed == 0)
+			return;
+
+		GUI.skin.label.fontSize = 50;
+		
+		// 显示游戏失败
+		GUI.skin.label.alignment = TextAnchor.LowerCenter;
+		GUI.Label(new Rect(0, Screen.height * 0.2f, Screen.width, 60), m_failed == 1 ? "游戏失败" : "取得胜利");
+		
+		GUI.skin.label.fontSize = 20;
+		GUI.skin.button.fontSize = 28;
+		// 显示按钮
+		if (GUI.Button(new Rect(Screen.width * 0.5f - 100, Screen.height * 0.5f, 200, 30), "再玩一次"))
+		{
+			// 读取当前关卡
+			Application.LoadLevel(Application.loadedLevelName);
+		}
+		GUI.skin.button.fontSize = 20;
 	}
 }
