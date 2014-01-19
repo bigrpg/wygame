@@ -5,8 +5,8 @@ public class GameManager : MonoBehaviour {
 
 	public static GameManager Instance;
 	//玩家数值
-	public float m_secret = 100;	//活动隐蔽性[0--100]
-	public float m_power = 0;	//活动能力[0--100]
+	public float m_secret = 100;	//军队能力
+	public float m_power = 0;	//科技水平
 	public float m_money = 0;	//金钱
 	public float m_support = 0; 	//追随者数量
 	public float m_death = 0;		//死亡人数
@@ -30,10 +30,10 @@ public class GameManager : MonoBehaviour {
 		"你们的反抗活动被发现了，努力提高你们的<color=red>隐蔽度</color>\n" +
 		"可以降低政府的镇压能力",
 
-		"你们的反抗活动在局部取得胜利了，恭喜你们。\n" +
+		"你们的反抗活动在局部取得胜利了，恭喜你们\n" +
 		"你们获得了资金支持\n" +
-		"消耗金钱来提升活动能力和隐蔽度将有助你更快获胜\n" +
-		"<color=green>注:资金可以用于升级活动能力和隐蔽度</color>"
+		"消耗金钱来提升军队能力和科技水平将有助你更快获胜\n" +
+		"<color=red>注:点击左下角图标提升军队能力和科技水平</color>"
 	
 	
 	};
@@ -75,7 +75,7 @@ public class GameManager : MonoBehaviour {
 		m_xiulian_gui = GameObject.FindGameObjectWithTag("Xiulian").GetComponent<Xiulian>();
 
 		SetMoney(10000);
-		SetPower(1);
+		SetPower(100);
 		SetSecret(100);
 		SetSupport(1000);
 		SetDeath(0);
@@ -144,12 +144,12 @@ public class GameManager : MonoBehaviour {
 
 		if(m_totaltime>3)  //调整其他数值
 		{
-			m_secret = m_secret - 5;
-			if(m_secret <0)
-				m_secret = 0;
-			SetSecret(m_secret);
+			//m_secret = m_secret + 5 * Random.value;
+			//if(m_secret <0)
+			//	m_secret = 0;
+			//SetSecret(m_secret);
 
-			m_putdown = m_putdown + 4;
+			m_putdown = m_putdown + 3+2*Random.value;
 			if(m_putdown >100)
 			{
 				m_putdown = 100;
@@ -158,8 +158,8 @@ public class GameManager : MonoBehaviour {
 
 			m_totaltime = 0;
 
-			m_support += (Random.value*0.5f) * m_support;
-			m_death += (Random.value*0.5f * m_death)+5;
+			m_support += (Random.value*0.4f) * m_support;
+			m_death += (Random.value*0.4f * m_death)+5;
 
 			SetSupport(m_support);
 			SetDeath(m_death);
@@ -191,13 +191,13 @@ public class GameManager : MonoBehaviour {
 
 	public void SetPower(float p) {
 		m_power = p;
-		m_powerLabel.text = "斗争力:" + ((int)m_power).ToString();
+		m_powerLabel.text = "科技水平:" + ((int)m_power).ToString();
 
 	}
 
 	public void SetSecret(float s) {
 		m_secret = s;
-		m_secretLabel.text = "隐蔽度:" + ((int)m_secret).ToString();
+		m_secretLabel.text = "军队能力:" + ((int)m_secret).ToString();
 	}
 
 	public void SetSupport(float s) {

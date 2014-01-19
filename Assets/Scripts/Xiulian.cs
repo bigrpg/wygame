@@ -31,9 +31,9 @@ public class Xiulian : MonoBehaviour {
 				{
 					inst.m_money -= needMoney;
 					inst.SetMoney(inst.m_money);
-					inst.m_secret += 5;
-					if(inst.m_secret >100)
-						inst.m_secret = 100;
+					inst.m_secret += 5*Random.value;
+					//if(inst.m_secret >100)
+					//	inst.m_secret = 100;
 					inst.SetSecret(inst.m_secret);
 					AdjustPutdown(-20);
 				}
@@ -48,7 +48,7 @@ public class Xiulian : MonoBehaviour {
 				{
 					inst.m_money -= needMoney;
 					inst.SetMoney(inst.m_money);
-					inst.m_power += 20;
+					inst.m_power += 20*Random.value;
 					inst.SetPower(inst.m_power);
 					AdjustPutdown(-20);
 				}

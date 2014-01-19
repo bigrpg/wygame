@@ -3,9 +3,14 @@ using System.Collections;
 
 public class TitleScreen : MonoBehaviour {
 
+	public AudioClip m_bgsound;
+
+	protected AudioSource m_audio;
+
 	// Use this for initialization
 	void Start () {
-	
+		m_audio = this.audio;
+		//m_audio.PlayOneShot(m_bgsound);
 	}
 	
 	// Update is called once per frame
