@@ -1,17 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
 public class GameManager : MonoBehaviour {
+
+	struct Param
+	{
+		public float military;	//军队数量
+		public float tech;	//科技水平
+		public float power;//实力
+	};
+
+	const int m_maxArea = 1;
+	const float m_vicRatio = 3; //获胜比例
+
+	Param[]  m_param = new Param[m_maxArea*2];
+	public int m_currentArea = 0;
+
 
 	public static GameManager Instance;
 	//玩家数值
-	public float m_secret = 100;	//军队能力
-	public float m_power = 0;	//科技水平
 	public float m_money = 0;	//金钱
 	public float m_support = 0; 	//追随者数量
 	public float m_death = 0;		//死亡人数
 
-	public float m_putdown = 0;	//政府镇压力度[0--100]
+	public float m_powerRatio = 50;	//政府镇压力度[0--100]
 
 	public Transform[] m_baopos;
 	//fx
@@ -22,6 +35,7 @@ public class GameManager : MonoBehaviour {
 	protected float m_delayShowTips = -1;
 	protected float m_totaltime = 0;
 	public bool  m_pause = false;
+	bool m_first = true;
 
 	protected int m_failed = 0;
 
@@ -33,18 +47,16 @@ public class GameManager : MonoBehaviour {
 		"你们的反抗活动在局部取得胜利了，恭喜你们\n" +
 		"你们获得了资金支持\n" +
 		"消耗金钱来提升军队能力和科技水平将有助你更快获胜\n" +
-		"<color=red>注:点击左下角图标提升军队能力和科技水平</color>"
+		"<color=red>注:点击左下角图标提升军队数量和科技水平</color>"
 	
 	
 	};
 
 
 	GUIText m_moneyLabel;
-	GUIText m_powerLabel;
-	GUIText m_secretLabel;
 	GUIText m_supportLabel;
 	GUIText m_deathLabel;
-	GUITexture m_putdown_progress_tex;
+	GUITexture m_powerratio_progress_tex;
 	GUITexture m_xiulian_btn;
 
 
@@ -62,24 +74,30 @@ public class GameManager : MonoBehaviour {
 	void Start () {
 
 		//this.gameObject.SetActiveRecursively(false);
+		for(int i=0;i<m_maxArea*2;i+=2)
+		{
+			m_param[i].military = 100000;
+			m_param[i].tech = 100;
+			UpdateParamPower(i);
+
+			m_param[i+1].military = 1000000;
+			m_param[i+1].tech = 200;
+			UpdateParamPower(i+1);
+		}
 
 		m_moneyLabel = this.transform.FindChild("money_label").GetComponent<GUIText>();
-		m_powerLabel = this.transform.FindChild("power_label").GetComponent<GUIText>();
-		m_secretLabel = this.transform.FindChild("secret_label").GetComponent<GUIText>();
 		m_supportLabel = this.transform.FindChild("support_label").GetComponent<GUIText>();
 		m_deathLabel = this.transform.FindChild("death_label").GetComponent<GUIText>();
-		m_putdown_progress_tex = this.transform.FindChild("putdown_progress").GetComponent<GUITexture>();
+		m_powerratio_progress_tex = this.transform.FindChild("powerratio_progress").GetComponent<GUITexture>();
 		m_tipsLabel = this.transform.FindChild("tips").GetComponent<GUIText>();
 		m_tipsBg_tex = this.transform.FindChild("tipsBg").GetComponent<GUITexture>();
 		m_xiulian_btn = this.transform.FindChild("xiulian_btn").GetComponent<GUITexture>();
 		m_xiulian_gui = GameObject.FindGameObjectWithTag("Xiulian").GetComponent<Xiulian>();
 
 		SetMoney(10000);
-		SetPower(100);
-		SetSecret(100);
 		SetSupport(1000);
 		SetDeath(0);
-		SetPutDown(0);
+		SetPowerRatio(0);
 
 		SetTips("");
 		m_xiulian_gui.Show(false);
@@ -122,7 +140,7 @@ public class GameManager : MonoBehaviour {
 				m_pause = true;
 			}
 		}
-		else if(m_baotime >0)
+		else if(m_baotime >0) //赚钱
 		{
 
 			m_baotime -= Time.deltaTime;
@@ -144,18 +162,6 @@ public class GameManager : MonoBehaviour {
 
 		if(m_totaltime>3)  //调整其他数值
 		{
-			//m_secret = m_secret + 5 * Random.value;
-			//if(m_secret <0)
-			//	m_secret = 0;
-			//SetSecret(m_secret);
-
-			m_putdown = m_putdown + 3+2*Random.value;
-			if(m_putdown >100)
-			{
-				m_putdown = 100;
-			}
-			SetPutDown(m_putdown);
-
 			m_totaltime = 0;
 
 			m_support += (Random.value*0.4f) * m_support;
@@ -164,20 +170,32 @@ public class GameManager : MonoBehaviour {
 			SetSupport(m_support);
 			SetDeath(m_death);
 
+			UpdateParam(m_currentArea); //民众
+			UpdateParam(m_currentArea+1); //政府
+
+			UpdateParamPower(m_currentArea);
+			UpdateParamPower(m_currentArea+1);
+
+			float percent = CalcAreaPowerRatio(m_currentArea);
+			SetPowerRatio(percent/m_vicRatio);
+			m_first = false;
 		}
 
-		if(m_putdown ==100)
+		if(m_first)
+			return;
+
+		if(m_powerRatio*m_vicRatio >= m_vicRatio*100)
 		{
 			m_pause = true;
-			m_failed = 1;
+			m_failed = 2;
 			m_delayShowTips = 0;
 			SetTips("");
 			m_xiulian_gui.Show(false);
 		}
-		else if(m_support >= 10000000)
+		else if(m_powerRatio*m_vicRatio <= 10)
 		{
 			m_pause = true;
-			m_failed = 2;
+			m_failed = 1;
 			m_delayShowTips = 0;
 			SetTips("");
 			m_xiulian_gui.Show(false);
@@ -189,15 +207,15 @@ public class GameManager : MonoBehaviour {
 		m_moneyLabel.text = "金钱:" + ((int)(m_money)).ToString();
 	}
 
-	public void SetPower(float p) {
-		m_power = p;
-		m_powerLabel.text = "科技水平:" + ((int)m_power).ToString();
-
+	//对当前的Area修改军队数量
+	public void AddMilitary(float delta)
+	{
+		m_param[m_currentArea].military += delta;
 	}
 
-	public void SetSecret(float s) {
-		m_secret = s;
-		m_secretLabel.text = "军队能力:" + ((int)m_secret).ToString();
+	public void AddTech(float delta)
+	{
+		m_param[m_currentArea].tech += delta;
 	}
 
 	public void SetSupport(float s) {
@@ -210,9 +228,9 @@ public class GameManager : MonoBehaviour {
 		m_deathLabel.text = "伤亡:" + ((int)m_death).ToString();
 	}
 
-	public void SetPutDown(float p) {
-		m_putdown = p;
-		m_putdown_progress_tex.pixelInset=new Rect(0,-16,256*m_putdown/100,16);
+	public void SetPowerRatio(float p) {
+		m_powerRatio = p;
+		m_powerratio_progress_tex.pixelInset=new Rect(0,-16,256*m_powerRatio/100,16);
 	}
 
 	public void SetTips(string  s) {
@@ -227,6 +245,27 @@ public class GameManager : MonoBehaviour {
 			m_tipsLabel.enabled = true;
 			m_tipsBg_tex.enabled = true;
 		}
+	}
+
+	//根据科技水平提升军队数量
+	void UpdateParam(int i)
+	{
+		m_param[i].military += 1000 * m_param[i].tech;
+	}
+
+	//根据军队数量和科技水平计算实力
+	void UpdateParamPower(int i)
+	{
+		m_param[i].power = (float)(System.Math.Sqrt(m_param[i].military)) * m_param[i].tech;
+	}
+
+	float CalcAreaPowerRatio(int i)
+	{
+		float powerPeople = m_param[i].power;
+		float powerGov = m_param[i+1].power;
+
+		float percent = powerPeople*100/(powerGov);
+		return percent;
 	}
 	 
 	void OnGUI()
