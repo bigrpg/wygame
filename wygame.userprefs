@@ -1,13 +1,15 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\GameManager.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Xiulian.cs">
     <Files>
-      <File FileName="Assets\Scripts\GameManager.cs" Line="50" Column="30" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="230" Column="1" />
+      <File FileName="Assets\Scripts\Plane.cs" Line="22" Column="1" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="1" Column="1" />
       <File FileName="Assets\Scripts\TitleScreen.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Xiulian.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Xiulian.cs" Line="39" Column="1" />
       <File FileName="Assets\Scripts\Soldiers.cs" Line="1" Column="1" />
       <File FileName="Assets\Scripts\SoldierSpawn.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Help.cs" Line="19" Column="14" />
+      <File FileName="Assets\Scripts\Help.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

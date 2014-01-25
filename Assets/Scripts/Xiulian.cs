@@ -36,7 +36,7 @@ public class Xiulian : MonoBehaviour {
 					//	inst.m_secret = 100;
 					//inst.SetSecret(inst.m_secret);
 					//AdjustPutdown(-20);
-					inst.AddTech(50*Random.value);
+					inst.AddTech(100*Random.value);
 				}
 				else{
 					exit = false;
@@ -52,7 +52,7 @@ public class Xiulian : MonoBehaviour {
 					//inst.m_power += 20*Random.value;
 					//inst.SetPower(inst.m_power);
 					//AdjustPutdown(-20);
-					inst.AddMilitary(2000*Random.value);
+					inst.AddMilitary(5000*Random.value);
 				}
 				else{
 					exit = false;
@@ -73,7 +73,7 @@ public class Xiulian : MonoBehaviour {
 
 	public void Show(bool s)
 	{
-		this.gameObject.SetActiveRecursively(s);
+		this.gameObject.SetActive(s);
 	}
 
 //	void AdjustPutdown(float pd)

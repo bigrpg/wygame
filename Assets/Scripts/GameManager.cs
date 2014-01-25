@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour {
 	};
 
 	const int m_maxArea = 1;
-	const float m_vicRatio = 3; //获胜比例
+	const float m_vicRatio = 6; //获胜比例
 
 	Param[]  m_param = new Param[m_maxArea*2];
 	public int m_currentArea = 0;
@@ -29,6 +29,15 @@ public class GameManager : MonoBehaviour {
 	public Transform[] m_baopos;
 	//fx
 	public Transform m_explosionFX;
+	//color
+	public Color m_color0;
+	public Color m_color1;
+	public Color m_color2;
+	public float m_colorKey0;
+	public float m_colorKey1;
+	public float m_colorKey2;
+
+
 
 	protected float m_baotime = 5;
 	protected float m_minbaogap_time = 5;
@@ -76,12 +85,14 @@ public class GameManager : MonoBehaviour {
 		//this.gameObject.SetActiveRecursively(false);
 		for(int i=0;i<m_maxArea*2;i+=2)
 		{
-			m_param[i].military = 100000;
+			m_param[i].military = 10000;
 			m_param[i].tech = 100;
+			m_param[i].power = 50;
 			UpdateParamPower(i);
 
 			m_param[i+1].military = 1000000;
-			m_param[i+1].tech = 200;
+			m_param[i+1].tech = 94; //speed 9.4
+			m_param[i+1].power = 100;
 			UpdateParamPower(i+1);
 		}
 
@@ -94,7 +105,7 @@ public class GameManager : MonoBehaviour {
 		m_xiulian_btn = this.transform.FindChild("xiulian_btn").GetComponent<GUITexture>();
 		m_xiulian_gui = GameObject.FindGameObjectWithTag("Xiulian").GetComponent<Xiulian>();
 
-		SetMoney(10000);
+		SetMoney(100000);
 		SetSupport(1000);
 		SetDeath(0);
 		SetPowerRatio(0);
@@ -109,6 +120,7 @@ public class GameManager : MonoBehaviour {
 		bool mouseup = Input.GetMouseButtonUp(0);
 		Vector3 mousepos = Input.mousePosition;
 
+		SetPowerRatio(m_powerRatio);
 
 		if(mouseup)
 		{
@@ -136,8 +148,8 @@ public class GameManager : MonoBehaviour {
 			m_delayShowTips -= Time.deltaTime;
 			if(m_delayShowTips<0)
 			{
-				SetTips (m_msg[1]);
-				m_pause = true;
+				//SetTips (m_msg[1]);
+				//m_pause = true;
 			}
 		}
 		else if(m_baotime >0) //赚钱
@@ -153,19 +165,19 @@ public class GameManager : MonoBehaviour {
 				m_baotime = Random.value * 5 + m_minbaogap_time;
 				Instantiate(m_explosionFX,m_baopos[index].position,Quaternion.identity);
 				m_delayShowTips = 1;
-				SetMoney(m_money + 100.0f);//增加100钱
+				SetMoney(m_money + 200.0f);//增加100钱
 			}
 		}
 
 		m_totaltime += Time.deltaTime;
 
 
-		if(m_totaltime>3)  //调整其他数值
+		if(m_totaltime>3 || m_first)  //调整其他数值
 		{
 			m_totaltime = 0;
 
-			m_support += (Random.value*0.4f) * m_support;
-			m_death += (Random.value*0.4f * m_death)+5;
+			m_support += (Random.value*0.4f) * 1000;
+			m_death += (Random.value*0.4f * 100)+5;
 
 			SetSupport(m_support);
 			SetDeath(m_death);
@@ -177,14 +189,14 @@ public class GameManager : MonoBehaviour {
 			UpdateParamPower(m_currentArea+1);
 
 			float percent = CalcAreaPowerRatio(m_currentArea);
-			SetPowerRatio(percent/m_vicRatio);
+			SetPowerRatio(percent*100);
 			m_first = false;
 		}
 
 		if(m_first)
 			return;
 
-		if(m_powerRatio*m_vicRatio >= m_vicRatio*100)
+		if(m_powerRatio >= m_vicRatio*100/(m_vicRatio+1))
 		{
 			m_pause = true;
 			m_failed = 2;
@@ -192,7 +204,7 @@ public class GameManager : MonoBehaviour {
 			SetTips("");
 			m_xiulian_gui.Show(false);
 		}
-		else if(m_powerRatio*m_vicRatio <= 10)
+		else if(m_powerRatio <= 100/(m_vicRatio+1))
 		{
 			m_pause = true;
 			m_failed = 1;
@@ -230,7 +242,10 @@ public class GameManager : MonoBehaviour {
 
 	public void SetPowerRatio(float p) {
 		m_powerRatio = p;
-		m_powerratio_progress_tex.pixelInset=new Rect(0,-16,256*m_powerRatio/100,16);
+		float p2 = p*(m_vicRatio+1)/(m_vicRatio);
+		m_powerratio_progress_tex.pixelInset=new Rect(0,-16,256*p2/100,16);
+		if(Plane.Instance)
+			Plane.Instance.SetColor(GetWorldColor());
 	}
 
 	public void SetTips(string  s) {
@@ -250,13 +265,15 @@ public class GameManager : MonoBehaviour {
 	//根据科技水平提升军队数量
 	void UpdateParam(int i)
 	{
-		m_param[i].military += 1000 * m_param[i].tech;
+		//m_param[i].military += 1000 * m_param[i].tech;
+		if(i%2 ==1)
+			m_param[i].tech += 1;
 	}
 
 	//根据军队数量和科技水平计算实力
 	void UpdateParamPower(int i)
 	{
-		m_param[i].power = (float)(System.Math.Sqrt(m_param[i].military)) * m_param[i].tech;
+		m_param[i].power += (float)(System.Math.Sqrt(m_param[i].military)) * m_param[i].tech/10000;
 	}
 
 	float CalcAreaPowerRatio(int i)
@@ -264,8 +281,25 @@ public class GameManager : MonoBehaviour {
 		float powerPeople = m_param[i].power;
 		float powerGov = m_param[i+1].power;
 
-		float percent = powerPeople*100/(powerGov);
+		float percent = powerPeople/(powerGov+powerPeople);
 		return percent;
+	}
+
+	Color GetWorldColor()
+	{
+		if(m_powerRatio <= m_colorKey0)
+			return m_color0;
+		if(m_powerRatio<= m_colorKey1)
+		{
+			float lerp = (m_powerRatio - m_colorKey0)/(m_colorKey1-m_colorKey0);
+			return Color.Lerp(m_color0,m_color1,lerp);
+		}
+		if(m_powerRatio <= m_colorKey2)
+		{
+			float lerp = (m_powerRatio - m_colorKey1)/(m_colorKey2-m_colorKey1);
+			return Color.Lerp(m_color1,m_color2,lerp);
+		}
+		return m_color2;
 	}
 	 
 	void OnGUI()
